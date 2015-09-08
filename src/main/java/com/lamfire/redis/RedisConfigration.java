@@ -58,38 +58,65 @@ public class RedisConfigration {
     
     public int getMaxActive(){
         String v = conf.get("redis.maxActive");
+        if("".equals(v) || v == null){
+            return 16;
+        }
         return Integer.parseInt(v);
     }
      public int getMaxIdle(){
          String v = conf.get("redis.maxIdle");
+         if("".equals(v) || v == null){
+             return 16;
+         }
          return Integer.parseInt(v);
      }
      public int getMaxWait(){
          String v = conf.get("redis.maxWait");
+         if("".equals(v) || v == null){
+             return 60000;
+         }
          return Integer.parseInt(v);
      }
      public long getMinEvictableIdleTimeMillis(){
          String v = conf.get("redis.minEvictableIdleTimeMillis");
+         if("".equals(v) || v == null){
+             return 60000;
+         }
          return Long.parseLong(v);
      }
      public int getMinIdle(){
          String v = conf.get("redis.minIdle");
+         if("".equals(v) || v == null){
+             return 1;
+         }
          return Integer.parseInt(v);
      }
      public int getNumTestsPerEvictionRun(){
          String v = conf.get("redis.numTestsPerEvictionRun");
+         if("".equals(v) || v == null){
+             return -1;
+         }
          return Integer.parseInt(v);
      }
      public long getSoftMinEvictableIdleTimeMillis(){
          String v = conf.get("redis.softMinEvictableIdleTimeMillis");
+         if("".equals(v) || v == null){
+             return -1;
+         }
          return Long.parseLong(v);
      }
      public long getTimeBetweenEvictionRunsMillis(){
          String v = conf.get("redis.timeBetweenEvictionRunsMillis");
+         if("".equals(v) || v == null){
+             return 30000;
+         }
          return Long.parseLong(v);
      }
      public byte getWhenExhaustedAction(){
          String v = conf.get("redis.whenExhaustedAction");
+         if("".equals(v) || v == null){
+             return 1;
+         }
          return Byte.parseByte(v);
      }
 
