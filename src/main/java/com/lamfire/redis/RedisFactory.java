@@ -39,6 +39,10 @@ public class RedisFactory {
 		return pool;
 	}
 
+    public Admin getAdmin(){
+        return new Admin(getJedisPool());
+    }
+
 	public synchronized static RedisFactory getInstance() {
 		return getInstance(DefaultConfigFile);
 	}

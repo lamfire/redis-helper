@@ -1,15 +1,14 @@
 package com.lamfire.redis;
 
-import java.util.List;
-import java.util.Set;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-public class RedisCli {
+public class RedisCli implements BinaryJedisCommands, MultiKeyBinaryCommands, Closeable {
 
 	private JedisPool pool;
 
@@ -21,11 +20,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.exists(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -33,23 +30,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.exists(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long incr(String key) {
+    @Override
+    public Long persist(byte[] key) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.persist(key);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long incr(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.incr(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -57,11 +61,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.incr(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -69,11 +71,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.incrBy(key, step);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -81,23 +81,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.incrBy(key, step);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long append(String key, String val) {
+    @Override
+    public Double incrByFloat(byte[] key, double value) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.incrByFloat(key,value);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long append(String key, String val) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.append(key, val);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -105,11 +112,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.append(key, val);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -117,23 +122,18 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.decr(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public long decr(byte[] key) {
+	public Long decr(byte[] key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.decr(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -141,11 +141,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.decrBy(key, step);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -153,11 +151,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.decrBy(key, step);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -165,11 +161,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hexists(key, field);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -177,23 +171,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hexists(key, field);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public String get(String key) {
+    @Override
+    public Long hdel(byte[] key, byte[]... field) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.hdel(key,field);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public String get(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.get(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -201,11 +202,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.get(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -213,11 +212,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hget(key, field);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -226,11 +223,9 @@ public class RedisCli {
 		try {
 			byte[] bytes = jedis.hget(key, field);
 			return bytes;
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -238,35 +233,40 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.set(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public void set(byte[] key, byte[] value) {
+	public String set(byte[] key, byte[] value) {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.set(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+			return jedis.set(key, value);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public byte[] lindex(byte[] key, long index) {
+    @Override
+    public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.set(key,value,nxxx,expx,time);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public byte[] lindex(byte[] key, long index) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lindex(key, index);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -274,11 +274,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.mget(keys);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -286,23 +284,325 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.mget(keys);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public byte[] getSet(byte[] key, byte[] value) {
+    @Override
+    public String mset(byte[]... keysvalues) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.mset(keysvalues);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long msetnx(byte[]... keysvalues) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.msetnx(keysvalues);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public String rename(byte[] oldkey, byte[] newkey) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.rename(oldkey,newkey);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long renamenx(byte[] oldkey, byte[] newkey) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.renamenx(oldkey, newkey);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public byte[] rpoplpush(byte[] srckey, byte[] dstkey) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.rpoplpush(srckey, dstkey);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> sdiff(byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sdiff(keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long sdiffstore(byte[] dstkey, byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sdiffstore(dstkey,keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> sinter(byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sinter(keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long sinterstore(byte[] dstkey, byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sinterstore(dstkey, keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long smove(byte[] srckey, byte[] dstkey, byte[] member) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.smove(srckey, dstkey, member);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sort(key, sortingParameters,dstkey);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long sort(byte[] key, byte[] dstkey) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sort(key, dstkey);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> sunion(byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sunion(keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long sunionstore(byte[] dstkey, byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sunionstore(dstkey, keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public String watch(byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.watch(keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public String unwatch() {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.unwatch();
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long zinterstore(byte[] dstkey, byte[]... sets) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zinterstore(dstkey, sets);
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zinterstore(dstkey, sets);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long zunionstore(byte[] dstkey, byte[]... sets) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zunionstore(dstkey, sets);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zunionstore(dstkey, sets);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.brpoplpush(source, destination, timeout);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long publish(byte[] channel, byte[] message) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.publish(channel, message);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
+        Jedis jedis = pool.getResource();
+        try {
+            jedis.subscribe(jedisPubSub, channels);
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
+        Jedis jedis = pool.getResource();
+        try {
+            jedis.psubscribe(jedisPubSub, patterns);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public byte[] randomBinaryKey() {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.randomBinaryKey();
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.bitop(op, destKey, srcKeys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public String pfmerge(byte[] destkey, byte[]... sourcekeys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pfmerge(destkey, sourcekeys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long pfcount(byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pfcount(keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public byte[] getSet(byte[] key, byte[] value) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.getSet(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -310,11 +610,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.getSet(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -322,11 +620,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.lpush(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -334,11 +630,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lpush(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -346,11 +640,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.rpush(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -358,11 +650,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.rpush(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -370,11 +660,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lpop(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -382,11 +670,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lpop(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -394,11 +680,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.rpop(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -406,23 +690,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.rpop(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long hset(byte[] key, byte[] field, byte[] value) {
+    @Override
+    public Long sadd(byte[] key, byte[]... member) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.sadd(key,member);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long hset(byte[] key, byte[] field, byte[] value) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hset(key, field, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -430,11 +721,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hlen(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -442,11 +731,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hlen(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -454,11 +741,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.llen(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -466,11 +751,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.llen(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -478,11 +761,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hset(key, field, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -490,11 +771,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hkeys(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -502,11 +781,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hkeys(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -514,23 +791,74 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.keys(pattern);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<byte[]> keys(byte[] pattern) {
+    @Override
+    public Long del(byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.del(keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public List<byte[]> blpop(int timeout, byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.blpop(timeout, keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public List<byte[]> brpop(int timeout, byte[]... keys) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.brpop(timeout, keys);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public List<byte[]> blpop(byte[]... args) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.blpop(args);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public List<byte[]> brpop(byte[]... args) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.brpop(args);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<byte[]> keys(byte[] pattern) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.keys(pattern);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -538,11 +866,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hvals(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -550,11 +876,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hvals(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -562,11 +886,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hmget(key, fields);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -574,23 +896,18 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hmget(key, fields);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public void hmset(byte[] key, java.util.Map<byte[], byte[]> map) {
+	public String hmset(byte[] key, java.util.Map<byte[], byte[]> map) {
 		Jedis jedis = pool.getResource();
 		try {
-			jedis.hmset(key, map);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+			return jedis.hmset(key, map);
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -598,11 +915,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hmset(key, map);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -610,23 +925,41 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hgetAll(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public java.util.Map<String, String> hgetAll(String key) {
+    @Override
+    public Long rpush(byte[] key, byte[]... args) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.rpush(key,args);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long lpush(byte[] key, byte[]... args) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.lpush(key,args);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public java.util.Map<String, String> hgetAll(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hgetAll(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -634,11 +967,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hdel(key, field);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -646,11 +977,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hdel(key, field);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -658,11 +987,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hincrBy(key, field, 1);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -670,11 +997,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hincrBy(key, field, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -682,36 +1007,41 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hincrBy(key, field, 1);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public long hincrBy(byte[] key, byte[] field, long value) {
+	public Long hincrBy(byte[] key, byte[] field, long value) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hincrBy(key, field, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public void set(byte[] key, byte[] value, int expirySeconds) {
+    @Override
+    public Double hincrByFloat(byte[] key, byte[] field, double value) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.hincrByFloat(key,field,value);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public void set(byte[] key, byte[] value, int expirySeconds) {
 		Jedis jedis = pool.getResource();
 		try {
 			jedis.set(key, value);
 			jedis.expire(key, expirySeconds);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -720,11 +1050,9 @@ public class RedisCli {
 		try {
 			jedis.set(key, value);
 			jedis.expire(key, expirySeconds);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -732,11 +1060,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.expire(key, seconds);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -744,23 +1070,41 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.expire(key, seconds);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long del(String key) {
+    @Override
+    public Long pexpire(String key, long milliseconds) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pexpire(key,milliseconds);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long pexpire(byte[] key, long milliseconds) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pexpire(key,milliseconds);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long del(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.del(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -768,23 +1112,85 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.del(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long ttl(byte[] key) {
+    @Override
+    public byte[] echo(byte[] arg) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.echo(arg);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long move(byte[] key, int dbIndex) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.move(key,dbIndex);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long bitcount(byte[] key) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.bitcount(key);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long bitcount(byte[] key, long start, long end) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.bitcount(key,start,end);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long pfadd(byte[] key, byte[]... elements) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pfadd(key,elements);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public long pfcount(byte[] key) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pfcount(key);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long ttl(byte[] key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.ttl(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -792,11 +1198,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.ttl(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -804,11 +1208,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.expireAt(key, expireAt);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -816,23 +1218,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.expireAt(key, expireAt);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Boolean getbit(String key, long offset) {
+    @Override
+    public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.pexpireAt(key,millisecondsTimestamp);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Boolean getbit(String key, long offset) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.getbit(key, offset);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -840,11 +1249,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.getbit(key, offset);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -852,11 +1259,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.getrange(key, startOffset, endOffset);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -864,11 +1269,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.getrange(key, startOffset, endOffset);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -876,11 +1279,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hsetnx(key, field, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -888,11 +1289,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.hsetnx(key, field, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -900,11 +1299,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lindex(key, index);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -912,11 +1309,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.linsert(key, where, pivot, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -924,11 +1319,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lrange(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -936,11 +1329,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lrange(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -948,11 +1339,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lrem(key, count, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -960,11 +1349,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lrem(key, count, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -972,11 +1359,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lset(key, index, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -984,11 +1369,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.lset(key, index, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -996,11 +1379,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.ltrim(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1008,11 +1389,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.ltrim(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1020,11 +1399,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sadd(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1032,11 +1409,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sadd(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1044,11 +1419,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.scard(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1056,11 +1429,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.scard(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1068,11 +1439,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setbit(key, offset, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1080,23 +1449,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setbit(key, offset, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public String setex(String key, int seconds, String value) {
+    @Override
+    public Boolean setbit(byte[] key, long offset, byte[] value) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.setbit(key,offset,value);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public String setex(String key, int seconds, String value) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setex(key, seconds, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1104,11 +1480,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setex(key, seconds, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1116,11 +1490,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setnx(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1128,11 +1500,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setnx(key, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1140,11 +1510,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setrange(key, offset, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1152,11 +1520,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.setrange(key, offset, value);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1164,11 +1530,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sismember(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1176,11 +1540,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sismember(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1188,11 +1550,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.smembers(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1200,23 +1560,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.smembers(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public List<String> sort(String key) {
+    @Override
+    public Long srem(byte[] key, byte[]... member) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.srem(key,member);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public List<String> sort(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sort(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1224,11 +1591,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sort(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1236,11 +1601,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sort(key, sortingParameters);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1248,11 +1611,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.sort(key, sortingParameters);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1260,11 +1621,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.spop(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1272,23 +1631,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.spop(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public String srandmember(String key) {
+    @Override
+    public Set<byte[]> spop(byte[] key, long count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.spop(key,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public String srandmember(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.srandmember(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1296,23 +1662,41 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.srandmember(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long srem(String key, String member) {
+    @Override
+    public List<byte[]> srandmember(byte[] key, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.srandmember(key,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long strlen(byte[] key) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.strlen(key);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long srem(String key, String member) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.srem(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1320,11 +1704,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.srem(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1332,11 +1714,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.substr(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1344,11 +1724,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.substr(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1356,11 +1734,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.type(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1368,11 +1744,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.type(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1380,11 +1754,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zadd(key, score, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1392,23 +1764,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zadd(key, score, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long zcard(String key) {
+    @Override
+    public Long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zadd(key,scoreMembers);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long zcard(String key) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zcard(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1416,11 +1795,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zcard(key);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1428,11 +1805,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zcount(key, min, max);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1440,23 +1815,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zcount(key, min, max);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Double zincrby(String key, double score, String member) {
+    @Override
+    public Long zcount(byte[] key, byte[] min, byte[] max) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zcount(key,min,max);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Double zincrby(String key, double score, String member) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zincrby(key, score, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1464,11 +1846,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zincrby(key, score, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1476,11 +1856,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrange(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1488,23 +1866,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrange(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<String> zrangeByScore(String key, double min, double max) {
+    @Override
+    public Long zrem(byte[] key, byte[]... member) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrem(key,member);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<String> zrangeByScore(String key, double min, double max) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScore(key, min, max);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1512,23 +1897,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScore(key, min, max);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
+    @Override
+    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrangeByScore(key,min,max);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScore(key, min, max, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1536,23 +1928,41 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScore(key, min, max, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
+    @Override
+    public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeByScore(key,max,min);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrangeByScore(key,min,max,offset,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScoreWithScores(key, min, max);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1560,11 +1970,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScoreWithScores(key, min, max);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1572,11 +1980,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScoreWithScores(key, min, max, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1584,23 +1990,63 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeByScoreWithScores(key, min, max, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<Tuple> zrangeWithScores(String key, long start, long end) {
+    @Override
+    public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeByScore(key,max,min,offset,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrangeByScoreWithScores(key,min,max);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key,max,min);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrangeByScoreWithScores(key,min,max,offset,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<Tuple> zrangeWithScores(String key, long start, long end) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeWithScores(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1608,23 +2054,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrangeWithScores(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Long zrank(String key, String member) {
+    @Override
+    public Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeWithScores(key,start,end);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Long zrank(String key, String member) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrank(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1632,11 +2085,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrank(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1644,11 +2095,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrem(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1656,11 +2105,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrem(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1668,11 +2115,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zremrangeByRank(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1680,11 +2125,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zremrangeByRank(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1692,11 +2135,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zremrangeByScore(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1704,23 +2145,151 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zremrangeByScore(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<String> zrevrange(String key, long start, long end) {
+    @Override
+    public Long zremrangeByScore(byte[] key, byte[] start, byte[] end) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zremrangeByScore(key,start,end);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long zlexcount(byte[] key, byte[] min, byte[] max) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zlexcount(key,min,max);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrangeByLex(key,min,max);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrangeByLex(key,min,max,offset,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeByLex(key,max,min);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeByLex(key,max,min,offset,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long zremrangeByLex(byte[] key, byte[] min, byte[] max) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zremrangeByLex(key,min,max);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.linsert(key,where,pivot,value);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long lpushx(byte[] key, byte[]... arg) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.lpushx(key,arg);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public Long rpushx(byte[] key, byte[]... arg) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.rpushx(key,arg);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public List<byte[]> blpop(byte[] arg) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.blpop(arg);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    @Override
+    public List<byte[]> brpop(byte[] arg) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.brpop(arg);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<String> zrevrange(String key, long start, long end) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrange(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1728,11 +2297,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrange(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1740,11 +2307,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScore(key, max, min);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1752,11 +2317,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScore(key, max, min);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1764,11 +2327,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScore(key, max, min, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1776,11 +2337,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScore(key, max, min, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1788,11 +2347,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScoreWithScores(key, max, min);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1800,11 +2357,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScoreWithScores(key, max, min);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1812,11 +2367,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1824,23 +2377,30 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
-	public Set<Tuple> zrevrangeWithScores(String key, int start, int end) {
+    @Override
+    public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Jedis jedis = pool.getResource();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key,max,min,offset,count);
+
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
+
+    public Set<Tuple> zrevrangeWithScores(String key, int start, int end) {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeWithScores(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1848,11 +2408,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrangeWithScores(key, start, end);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1860,11 +2418,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrank(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1872,11 +2428,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zrevrank(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1884,11 +2438,9 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zscore(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
@@ -1896,12 +2448,19 @@ public class RedisCli {
 		Jedis jedis = pool.getResource();
 		try {
 			return jedis.zscore(key, member);
-		} catch (Exception e) {
-			pool.returnBrokenResource(jedis);
-			throw new RuntimeException(e);
+
 		} finally {
-			pool.returnResource(jedis);
+			pool.returnResourceObject(jedis);
 		}
 	}
 
+    @Override
+    public void close() throws IOException {
+        Jedis jedis = pool.getResource();
+        try {
+            jedis.close();
+        } finally {
+            pool.returnResourceObject(jedis);
+        }
+    }
 }
