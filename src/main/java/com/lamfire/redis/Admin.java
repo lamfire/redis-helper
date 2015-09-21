@@ -166,7 +166,7 @@ public class Admin implements BasicCommands {
     public String info(String section) {
         Jedis jedis = pool.getResource();
         try {
-            return jedis.info();
+            return jedis.info(section);
 
         } finally {
             pool.returnResourceObject(jedis);
